@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+		<title>can i has websockets?</title>
+		<style>
+			.good { color: #090; }
+			.bad { color: #900; }
+			.important { font-weight: bold; }
+		</style>
+	</head>
+	<body>
+		<ol id="log"></ol>
+		<script src="/socket.io/socket.io.js"></script>
+		<script>
+			function log(text, disposition) {
+				var li = document.createElement("li");
+				li.textContent = text;
+				li.className = disposition || "";
+				document.getElementById("log").appendChild(li);
+			}
+
+			var transports = io.transports;
+			
+			function next() {
+				if(!transports.length) {
+					log("testing complete");
+					next = function(){};
+					return;
+				}
+				attempt(transports.shift());
+			}
+
+			function attempt(transport) {
+				log("attempting transport: " + transport, "important");
+				io.transports = [transport];
+				var socket = io.connect(null, {"force new connection": true, "reconnect": false});
+				socket.on("connect", function() {
+					log(transport + " connected");
+				});
+				socket.on("ok", function() {
+					log(transport + " ok", "good");
+				});
+				socket.on("error", function(reason) {
+					log("error: " + reason, "bad");
+				});
+				socket.on("connect_failed", function(reason) {
+					log("connect_failed: " + reason, "bad");
+					next();
+				});
+				socket.on("disconnect", function(reason) {
+					log("disconnect: " + reason);
+					next();
+				});
+			}
+
+			next();
+		</script>
+	</body>
+</html>
