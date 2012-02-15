@@ -12,5 +12,5 @@ io.sockets.on("connection", function(socket) {
 	socket.emit("ok");
 	setTimeout(function() {
 		socket.disconnect();
-	}, 200);
+	}, 1000);
 });
